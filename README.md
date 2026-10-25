@@ -1,5 +1,7 @@
 # ABAFlower
 
+Demo: https://willianso.github.io/abaflower/ (deploy automático via GitHub Actions a cada push na `main`).
+
 Protótipo de acompanhamento ABA para crianças, mobile-first (PWA). Sem backend por enquanto: dados ficam no `localStorage` do aparelho.
 
 ## Rodar
