@@ -167,6 +167,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
   font-weight: 800;
   font-size: 1.05rem;
   box-shadow: 0 8px 24px rgb(78 139 106 / 0.35);
+  white-space: nowrap; /* left:50% caps shrink-to-fit width at half the viewport */
+  width: max-content;
   z-index: 10;
 }
 .fab:active { transform: translateX(-50%) scale(0.97); }
@@ -456,7 +458,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   background:
     radial-gradient(600px 400px at 50% 35%, var(--petal-soft), transparent 70%),
     var(--bg);
-  animation: fade-in 0.3s ease both;
+  /* opaque from the first frame so the child page never shows through before the bloom */
 }
 .welcome--leaving { animation: fade-out 0.35s ease both; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
