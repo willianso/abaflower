@@ -16,7 +16,7 @@ export function Home() {
   const children = useChildren()
   const [query, setQuery] = useState('')
   const q = query.trim().toLowerCase()
-  const visible = q ? children.filter((c) => c.nickname.toLowerCase().includes(q)) : children
+  const visible = q ? children.filter((c) => c.name.toLowerCase().includes(q)) : children
 
   return (
     <div className="page">
@@ -44,13 +44,13 @@ export function Home() {
 
       {children.length === 0 ? (
         <div className="empty">
-          <Plant stage="semente" color="rosa" size={120} />
+          <Plant stage="semente" size={120} />
           <h2>Plante a primeira semente</h2>
           <p className="muted">
             Cadastre uma criança para começar a trilha, da adaptação até a reavaliação.
           </p>
           <Link to="/criancas/nova" className="btn btn--primary btn--lg">
-            <span aria-hidden="true">+</span> Plantar primeira semente
+            <span aria-hidden="true">+</span> Acolher criança
           </Link>
         </div>
       ) : (
@@ -59,7 +59,7 @@ export function Home() {
             <input
               className="input search"
               type="search"
-              placeholder="Buscar por apelido"
+              placeholder="Buscar por nome"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -71,7 +71,7 @@ export function Home() {
               </li>
             ))}
           </ul>
-          {visible.length === 0 && <p className="muted center">Nenhuma criança com esse apelido.</p>}
+          {visible.length === 0 && <p className="muted center">Nenhuma criança com esse nome.</p>}
           <Link to="/criancas/nova" className="fab">
             <span aria-hidden="true">+</span> Acolher criança
           </Link>

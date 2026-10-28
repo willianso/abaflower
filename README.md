@@ -27,4 +27,4 @@ src/
 - **Multi-tenant desde já**: toda entidade tem `clinicId`; storage é separado por clínica. A sessão mock
   (`data/session.ts`) vira o usuário autenticado no MVP.
 - **Repositório**: as telas só usam `ChildRepository`; trocar `localStorage` por API não muda a UI.
-- **Sem dados sensíveis**: só apelido, mês de nascimento aproximado (derivado da idade) e infos clínicas não identificáveis.
+- **Sem dados sensíveis**: só nome ou iniciais, mês de nascimento aproximado (derivado da idade) e infos clínicas não identificáveis.

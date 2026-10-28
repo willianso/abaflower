@@ -9,10 +9,10 @@ export function ChildCard({ child }: { child: Child }) {
   const label = positionLabel(child.journey)
   return (
     <Link to={`/criancas/${child.id}`} className="child-card">
-      <Plant stage={step.phase} color={child.color} size={56} />
+      <Plant stage={step.phase} size={56} />
       <div className="child-card__body">
         <div className="child-card__top">
-          <strong>{child.nickname}</strong>
+          <strong>{child.name}</strong>
           <span className="muted small">{formatAge(child.birthMonth)}</span>
         </div>
         <span className="chip chip--soft">

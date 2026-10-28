@@ -1,24 +1,14 @@
 import type { PhaseId } from '../domain/journey'
-import type { PetalColor } from '../domain/types'
-
-export const PETAL_HEX: Record<PetalColor, string> = {
-  rosa: '#F29BB8',
-  coral: '#F5A27F',
-  amarelo: '#F4C95D',
-  lilas: '#B6A0E6',
-  azul: '#87C3EA',
-  verde: '#9DCB84',
-}
+export const PETAL = '#F29BB8'
 
 interface Props {
   stage: PhaseId
-  color: PetalColor
   size?: number
 }
 
 /** The child's plant: grows from seed to flower following the journey phase. */
-export function Plant({ stage, color, size = 56 }: Props) {
-  const petal = PETAL_HEX[color]
+export function Plant({ stage, size = 56 }: Props) {
+  const petal = PETAL
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="plant">
       <circle cx="32" cy="32" r="31" fill={petal} opacity="0.18" />

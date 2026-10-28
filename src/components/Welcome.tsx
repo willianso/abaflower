@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { PetalColor } from '../domain/types'
-import { PETAL_HEX } from './Plant'
+import { PETAL } from './Plant'
 
 const FALLING = Array.from({ length: 14 }, (_, i) => ({
   left: (i * 37) % 100,
@@ -11,8 +10,8 @@ const FALLING = Array.from({ length: 14 }, (_, i) => ({
 }))
 
 /** Celebration shown after registering a child: a seed sprouts and blooms. */
-export function Welcome({ name, color, onDone }: { name: string; color: PetalColor; onDone: () => void }) {
-  const petal = PETAL_HEX[color]
+export function Welcome({ name, onDone }: { name: string; onDone: () => void }) {
+  const petal = PETAL
   const [leaving, setLeaving] = useState(false)
 
   function close() {

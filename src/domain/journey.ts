@@ -17,7 +17,9 @@ export interface Step {
   title: string
   description: string
   /** Unit counted inside the step, e.g. "Dia" for adaptation. */
-  unit?: { singular: string; plural: string; target: number; max?: number }
+  unit?: { singular: string; plural: string; target: number; max?: number; flexible?: boolean }
+  /** When set, one of these must be chosen before the step can be concluded. */
+  options?: string[]
 }
 
 export const PHASES: Phase[] = [
@@ -33,19 +35,14 @@ export const STEPS: Step[] = [
     phase: 'semente',
     title: 'Adaptação',
     description: 'Primeiros encontros para criar vínculo e observar a criança.',
-    unit: { singular: 'Dia', plural: 'dias', target: 3 },
+    unit: { singular: 'Dia', plural: 'dias', target: 3, flexible: true },
   },
   {
     id: 'protocolo',
     phase: 'semente',
     title: 'Escolha do protocolo',
     description: 'Definir o protocolo de avaliação com base na adaptação.',
-  },
-  {
-    id: 'planejamento',
-    phase: 'semente',
-    title: 'Planejamento',
-    description: 'Planejar a aplicação do protocolo, personalizado para a criança.',
+    options: ['Protocolo A', 'Protocolo B', 'Protocolo C', 'Protocolo D'],
   },
   {
     id: 'coleta',
@@ -59,12 +56,6 @@ export const STEPS: Step[] = [
     phase: 'semente',
     title: 'Relatório',
     description: 'Relatório com gráfico do protocolo a partir das coletas.',
-  },
-  {
-    id: 'habilidades',
-    phase: 'broto',
-    title: 'Habilidades do ciclo',
-    description: 'Escolher as habilidades a treinar neste ciclo, por área.',
   },
   {
     id: 'objetivos',
@@ -81,7 +72,7 @@ export const STEPS: Step[] = [
   {
     id: 'aplicacao',
     phase: 'broto',
-    title: 'Aplicação com assistente',
+    title: 'Coleta Programa de Ensino',
     description: 'Assistente aplica o plano e coleta dados (~10h semanais).',
     unit: { singular: 'Sessão', plural: 'sessões', target: 10 },
   },
@@ -115,7 +106,8 @@ export const getPhase = (id: PhaseId) => PHASES.find((p) => p.id === id)!
 export function positionLabel(pos: JourneyPosition) {
   const step = getStep(pos.stepId)
   if (!step.unit) return { title: step.title, detail: '' }
-  const { singular, target, max } = step.unit
+  const { singular, target, max, flexible } = step.unit
+  if (flexible) return { title: step.title, detail: `${singular} ${pos.count}` }
   const range = max ? `${target}–${max}` : `${target}`
   return { title: step.title, detail: `${singular} ${pos.count} de ${range}` }
 }
@@ -123,6 +115,7 @@ export function positionLabel(pos: JourneyPosition) {
 /** Advances one unit (day/session) or moves to the next step. Wraps to a new cycle after reavaliação. */
 export function advance(pos: JourneyPosition): JourneyPosition {
   const step = getStep(pos.stepId)
+  if (step.unit?.flexible) return { ...pos, count: pos.count + 1 }
   const limit = step.unit?.max ?? step.unit?.target ?? 0
   if (step.unit && pos.count < limit) return { ...pos, count: pos.count + 1 }
   return nextStep(pos)
@@ -132,13 +125,24 @@ export function nextStep(pos: JourneyPosition): JourneyPosition {
   const idx = stepIndex(pos.stepId)
   const now = new Date().toISOString()
   if (idx >= STEPS.length - 1) {
-    // Reavaliação feeds a new cycle starting at habilidades.
-    return { stepId: 'habilidades', count: 1, cycle: pos.cycle + 1, stepStartedAt: now }
+    // Reavaliação feeds a new cycle starting at the intervention phase.
+    return { stepId: 'objetivos', count: 1, cycle: pos.cycle + 1, stepStartedAt: now }
   }
-  return { ...pos, stepId: STEPS[idx + 1].id, count: 1, stepStartedAt: now }
+  return { ...pos, stepId: STEPS[idx + 1].id, count: 1, stepStartedAt: now, reached: undefined }
 }
+
+/** Key of the comment for the day/session the position points at. */
+export const dayNoteKey = (pos: JourneyPosition) => `${pos.cycle}:${pos.stepId}:${pos.count}`
 
 /** Overall progress through the current cycle, 0..1. */
 export function progress(pos: JourneyPosition) {
   return (stepIndex(pos.stepId) + 0.5) / STEPS.length
 }
+
+/** Positions visited in the current cycle (current one plus history), used to know which steps can be reviewed. */
+export const cycleVisits = (journey: JourneyPosition, history: JourneyPosition[]) =>
+  [journey, ...history].filter((p) => p.cycle === journey.cycle)
+
+/** Highest day/session reached in a step during the current cycle, or 0 if the step was not visited. */
+export const visitedMax = (journey: JourneyPosition, history: JourneyPosition[], stepId: string) =>
+  Math.max(0, ...cycleVisits(journey, history).filter((p) => p.stepId === stepId).map((p) => p.count))
