@@ -90,6 +90,14 @@ export function ChildForm() {
     navigate(`/criancas/${saved.id}`, { replace: true, state: existing ? undefined : { welcome: true } })
   }
 
+  function remove() {
+    if (!existing) return
+    if (confirm(`Excluir ${existing.name}? Todo o histórico será perdido.`)) {
+      childRepo.remove(existing.id)
+      navigate('/', { replace: true })
+    }
+  }
+
   return (
     <form className="page page--form" onSubmit={submit} noValidate>
       <header className="topbar">
@@ -97,7 +105,15 @@ export function ChildForm() {
           ←
         </button>
         <span className="topbar__title">{isEdit ? 'Editar criança' : 'Acolher criança'}</span>
-        <span className="icon-btn" />
+        {existing ? (
+          <button type="button" className="icon-btn icon-btn--danger" aria-label="Excluir criança" onClick={remove}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6" />
+            </svg>
+          </button>
+        ) : (
+          <span className="icon-btn" />
+        )}
       </header>
 
       <div className="form-hero">

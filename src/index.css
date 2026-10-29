@@ -124,6 +124,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   font-size: 1.4rem;
 }
 .icon-btn:active { background: var(--bg-accent); }
+.icon-btn--danger { color: var(--danger); background: transparent; }
 
 .row { display: flex; gap: 10px; }
 .row > * { flex: 1; }
@@ -557,55 +558,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .welcome__petals { display: none; }
 }
 
-/* Collapsible trail */
+/* Trail */
 .trail__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .trail__body { display: flex; flex-direction: column; gap: 8px; }
-.trail--collapsed .trail__body { cursor: pointer; }
-
-.trail__hint {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: 17px;
-  padding: 6px 0 6px 0;
-  border-left: 2px dashed var(--line);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--muted);
-  animation: fade-in 0.3s ease both;
-}
-.trail__hint-node {
-  flex: none;
-  width: 26px;
-  height: 26px;
-  margin-left: -14px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 0.75rem;
-  background: var(--bg-accent);
-  border: 2px solid var(--line);
-}
-.trail__hint--before .trail__hint-node { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
-.trail__hint--after { opacity: 0.85; }
-
-.trail__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 44px;
-  margin-top: 4px;
-  border: none;
-  border-radius: 14px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-weight: 800;
-  transition: transform 0.1s ease;
-}
-.trail__toggle:active { transform: scale(0.98); }
-.trail__chevron { display: inline-block; font-size: 1.1rem; line-height: 1; margin-top: -6px; transition: transform 0.3s var(--ease-spring); }
-.trail__toggle[aria-expanded='true'] .trail__chevron { transform: rotate(180deg); margin-top: 4px; }
 
 /* Review modal: the main card reused inside a sheet */
 .modal {

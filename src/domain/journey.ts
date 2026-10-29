@@ -49,7 +49,7 @@ export const STEPS: Step[] = [
     phase: 'semente',
     title: 'Coleta de informações',
     description: 'Sessões de aplicação e registro do protocolo.',
-    unit: { singular: 'Sessão', plural: 'sessões', target: 10, max: 20 },
+    unit: { singular: 'Sessão', plural: 'sessões', target: 3, flexible: true },
   },
   {
     id: 'relatorio',
@@ -102,7 +102,7 @@ export const stepIndex = (stepId: string) => STEPS.findIndex((s) => s.id === ste
 export const getStep = (stepId: string) => STEPS[stepIndex(stepId)] ?? STEPS[0]
 export const getPhase = (id: PhaseId) => PHASES.find((p) => p.id === id)!
 
-/** "Adaptação · Dia 1" / "Coleta de informações · Sessão 4 de 10–20" */
+/** "Adaptação · Dia 1" / "Coleta de informações · Sessão 4" */
 export function positionLabel(pos: JourneyPosition) {
   const step = getStep(pos.stepId)
   if (!step.unit) return { title: step.title, detail: '' }

@@ -1,12 +1,11 @@
-import { useCallback, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Modal } from '../components/Modal'
 import { Plant } from '../components/Plant'
 import { Welcome } from '../components/Welcome'
 import { childRepo, useChild } from '../data/children'
 import { formatAge } from '../domain/age'
-import { advance, cycleVisits, dayNoteKey, getPhase, getStep, type Step, nextStep, PHASES, positionLabel, STEPS, stepIndex, visitedMax } from '../domain/journey'
-import { COMMUNICATION, type Child, type JourneyPosition } from '../domain/types'
+import { advance, dayNoteKey, getPhase, getStep, type Step, nextStep, positionLabel } from '../domain/journey'
+import { type Child, type JourneyPosition } from '../domain/types'
 
 function MicIcon() {
   return (
@@ -79,7 +78,7 @@ interface Review {
   onClose: () => void
 }
 
-function HereCard({ child, review }: { child: Child; review?: Review }) {
+export function HereCard({ child, review }: { child: Child; review?: Review }) {
   const pos = review ? review.pos : child.journey
   const step = getStep(pos.stepId)
   const phase = getPhase(step.phase)
@@ -215,134 +214,12 @@ function HereCard({ child, review }: { child: Child; review?: Review }) {
   )
 }
 
-/** Steps shown around the current one when collapsed (current ± 1, shifted at the edges). */
-const WINDOW = 1
-
-function Trail({ child, onReview }: { child: Child; onReview: (stepId: string) => void }) {
-  const [expanded, setExpanded] = useState(false)
-  const current = stepIndex(child.journey.stepId)
-  const size = WINDOW * 2 + 1
-  const start = expanded ? 0 : Math.max(0, Math.min(current - WINDOW, STEPS.length - size))
-  const end = expanded ? STEPS.length - 1 : start + size - 1
-  const hiddenBefore = start
-  const hiddenAfter = STEPS.length - 1 - end
-  const visited = new Set(cycleVisits(child.journey, child.history).map((p) => p.stepId))
-
-  return (
-    <section className={`trail ${expanded ? '' : 'trail--collapsed'}`}>
-      <div className="trail__head">
-        <h3>Trilha</h3>
-        <span className="muted small">
-          Etapa {current + 1} de {STEPS.length}
-        </span>
-      </div>
-
-      <div
-        className="trail__body"
-        onClick={expanded ? undefined : () => setExpanded(true)}
-      >
-        {hiddenBefore > 0 && (
-          <div className="trail__hint trail__hint--before">
-            <span className="trail__hint-node" aria-hidden="true">✓</span>
-            {hiddenBefore} {hiddenBefore === 1 ? 'etapa concluída' : 'etapas concluídas'}
-          </div>
-        )}
-
-        {PHASES.map((phase) => {
-          const steps = STEPS.map((s, idx) => ({ s, idx })).filter(
-            ({ s, idx }) => s.phase === phase.id && idx >= start && idx <= end,
-          )
-          if (steps.length === 0) return null
-          return (
-            <div key={phase.id} className="trail__phase">
-              <div className="trail__phase-head">
-                <Plant stage={phase.id} size={36} />
-                <div>
-                  <strong>{phase.name}</strong>
-                  <span className="muted small"> · {phase.subtitle}</span>
-                </div>
-              </div>
-              <ol>
-                {steps.map(({ s, idx }) => {
-                  const state = idx === current ? 'now' : idx < current || visited.has(s.id) ? 'done' : 'next'
-                  const editable = state === 'done' && visited.has(s.id)
-                  return (
-                    <li
-                      key={s.id}
-                      style={{ ['--i' as string]: idx - start }}
-                      className={`trail__step trail__step--${state} ${editable ? 'trail__step--editable' : ''}`}
-                      {...(editable && {
-                        role: 'button',
-                        tabIndex: 0,
-                        'aria-label': `Editar etapa ${idx + 1}: ${s.title}`,
-                        onClick: (e: MouseEvent<HTMLLIElement>) => {
-                          e.stopPropagation()
-                          onReview(s.id)
-                        },
-                        onKeyDown: (e: KeyboardEvent<HTMLLIElement>) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            onReview(s.id)
-                          }
-                        },
-                      })}
-                    >
-                      <span className="trail__node" aria-hidden="true">
-                        {state === 'done' ? '✓' : idx + 1}
-                      </span>
-                      <div>
-                        <span className="trail__title">{s.title}</span>
-                        {state === 'now' && <span className="pill">você está aqui</span>}
-                        <span className="muted small trail__desc">{s.description}</span>
-                      </div>
-                    </li>
-                  )
-                })}
-              </ol>
-            </div>
-          )
-        })}
-
-        {hiddenAfter > 0 && (
-          <div className="trail__hint trail__hint--after">
-            <span className="trail__hint-node" aria-hidden="true">+</span>
-            mais {hiddenAfter} {hiddenAfter === 1 ? 'etapa' : 'etapas'} pela frente
-          </div>
-        )}
-      </div>
-
-      <button
-        type="button"
-        className="trail__toggle"
-        aria-expanded={expanded}
-        onClick={() => setExpanded((v) => !v)}
-      >
-        {expanded ? 'Recolher trilha' : 'Ver trilha completa'}
-        <span className="trail__chevron" aria-hidden="true">⌄</span>
-      </button>
-    </section>
-  )
-}
-
-function ReviewModal({ child, stepId, onClose }: { child: Child; stepId: string; onClose: () => void }) {
-  const max = visitedMax(child.journey, child.history, stepId)
-  const [count, setCount] = useState(max)
-  const pos: JourneyPosition = { stepId, count, cycle: child.journey.cycle, stepStartedAt: '' }
-  return (
-    <Modal label={`Editar ${getStep(stepId).title}`} onClose={onClose}>
-      {(close) => <HereCard child={child} review={{ pos, max, onMove: setCount, onClose: close }} />}
-    </Modal>
-  )
-}
-
 export function ChildDetail() {
   const { id } = useParams()
   const child = useChild(id)
   const navigate = useNavigate()
   const location = useLocation()
   const showWelcome = Boolean((location.state as { welcome?: boolean } | null)?.welcome)
-  const [reviewing, setReviewing] = useState<string | null>(null)
-  const closeReview = useCallback(() => setReviewing(null), [])
   const closeWelcome = useCallback(
     () => navigate(location.pathname, { replace: true, state: null }),
     [navigate, location.pathname],
@@ -359,14 +236,6 @@ export function ChildDetail() {
 
   const step = getStep(child.journey.stepId)
 
-  function remove() {
-    if (!child) return
-    if (confirm(`Excluir ${child.name}? Todo o histórico será perdido.`)) {
-      childRepo.remove(child.id)
-      navigate('/', { replace: true })
-    }
-  }
-
   return (
     <div className="page">
       <header className="topbar">
@@ -374,8 +243,8 @@ export function ChildDetail() {
           ←
         </Link>
         <span className="topbar__title" />
-        <Link to={`/criancas/${child.id}/editar`} className="btn btn--ghost btn--sm">
-          Editar
+        <Link to={`/criancas/${child.id}/editar`} className="icon-btn" aria-label="Editar">
+          <PenIcon />
         </Link>
       </header>
 
@@ -392,56 +261,9 @@ export function ChildDetail() {
       {showWelcome && <Welcome name={child.name} onDone={closeWelcome} />}
 
       <HereCard key={`${child.journey.cycle}-${child.journey.stepId}`} child={child} />
-      <Trail child={child} onReview={setReviewing} />
-      {reviewing && <ReviewModal child={child} stepId={reviewing} onClose={closeReview} />}
-
-      <section className="card info">
-        <h3>Sobre {child.name}</h3>
-        <dl>
-          <dt>Comunicação</dt>
-          <dd>{COMMUNICATION.find((c) => c.value === child.communication)?.label}</dd>
-          {child.interests.length > 0 && (
-            <>
-              <dt>Interesses</dt>
-              <dd className="chips">
-                {child.interests.map((i) => (
-                  <span key={i} className="chip chip--soft">
-                    {i}
-                  </span>
-                ))}
-              </dd>
-            </>
-          )}
-          {child.sensory.length > 0 && (
-            <>
-              <dt>Sensorial</dt>
-              <dd className="chips">
-                {child.sensory.map((i) => (
-                  <span key={i} className="chip chip--soft">
-                    {i}
-                  </span>
-                ))}
-              </dd>
-            </>
-          )}
-          {child.interfering && (
-            <>
-              <dt>Comportamentos interferentes</dt>
-              <dd>{child.interfering}</dd>
-            </>
-          )}
-          {child.protocol && (
-            <>
-              <dt>Protocolo</dt>
-              <dd>{child.protocol}</dd>
-            </>
-          )}
-        </dl>
-      </section>
-
-      <button className="btn btn--danger-ghost btn--block" onClick={remove}>
-        Excluir criança
-      </button>
+      <Link to={`/criancas/${child.id}/trilha`} className="btn btn--soft btn--block">
+        Visualizar trilha
+      </Link>
     </div>
   )
 }
